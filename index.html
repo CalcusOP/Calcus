@@ -594,6 +594,7 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
         <button class="bpchip" data-part="legs"><i class="ti ti-run"></i>Legs</button>
         <button class="bpchip" data-part="glutes"><i class="ti ti-circle-half-2"></i>Glutes</button>
         <button class="bpchip" data-part="cardio"><i class="ti ti-heart-rate-monitor"></i>Cardio</button>
+        <button class="bpchip" data-part="forearms"><i class="ti ti-hand-stop"></i>Forearms</button>
       </div>
       <div class="slabel" id="ex-slabel" style="display:none">Exercises</div>
       <div class="ex-sections" id="ex-sections"></div>
@@ -758,6 +759,13 @@ const DB={
     cable:[],
     machine:['Treadmill Run','Stationary Bike','Rowing Machine','Stairmaster','Elliptical','SkiErg','Air Bike'],
     bodyweight:['Jump Rope','HIIT Sprints','Burpees','Mountain Climbers','Box Jumps','Shadow Boxing','Battle Ropes','Bear Crawls']
+  },
+  forearms:{
+    barbell:['Barbell Wrist Curl','Barbell Reverse Wrist Curl','Barbell Reverse Curl','Barbell Zottman Curl'],
+    dumbbell:['Dumbbell Wrist Curl','Dumbbell Reverse Wrist Curl','Dumbbell Reverse Curl','Zottman Curl','Dumbbell Farmer Carry','Single-Arm Dumbbell Carry'],
+    cable:['Cable Wrist Curl','Cable Reverse Wrist Curl','Cable Reverse Curl','Cable Hammer Curl'],
+    machine:['Plate-Loaded Wrist Curl','Forearm Roller Machine'],
+    bodyweight:['Dead Hang','Active Dead Hang','Towel Pull Ups','Fingertip Push Ups','Rice Bucket Exercises','Wrist Roller']
   }
 };
 
@@ -871,6 +879,10 @@ function renderExList(part){
     e.style.cssText='font-size:12px;color:var(--txt3);text-align:center;padding:10px 0 4px';
     e.textContent='Tap "Add exercise" to get started';list.appendChild(e);return;
   }
+  const isCardio=(part==='cardio');
+  const col1=isCardio?'Mins':'Reps';
+  const col2=isCardio?'km':'kg';
+  const col2step=isCardio?'0.1':'0.5';
   S.exercises[part].forEach((ex,ei)=>{
     const cm=CAT_META[ex.cat]||CAT_META.barbell;
     const row=document.createElement('div');row.className='ex-row';
@@ -888,18 +900,19 @@ function renderExList(part){
         </div>
       </div>
       <div class="sets-area">
-        <div class="sets-header"><span></span><span>Reps</span><span>kg</span><span></span></div>
+        <div class="sets-header"><span></span><span>${col1}</span><span>${col2}</span><span></span></div>
         <div class="set-rows" id="sr-${part}-${ei}"></div>
-        <button class="add-set-btn"><i class="ti ti-plus" style="font-size:13px"></i>Add set</button>
+        <button class="add-set-btn"><i class="ti ti-plus" style="font-size:13px"></i>${isCardio?'Add session':'Add set'}</button>
       </div>`;
     row.querySelector('.change').addEventListener('click',()=>openPicker(part,ei));
     row.querySelector('.icon-btn:not(.change)').addEventListener('click',()=>{S.exercises[part].splice(ei,1);renderExList(part);});
     row.querySelector('.add-set-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.push({reps:'',weight:''});renderExList(part);});
     list.appendChild(row);
-    renderSetRows(part,ei);
+    renderSetRows(part,ei,col2step);
   });
 }
-function renderSetRows(part,ei){
+function renderSetRows(part,ei,col2step){
+  col2step=col2step||'0.5';
   const con=document.getElementById(`sr-${part}-${ei}`);if(!con)return;
   con.innerHTML='';
   (S.exercises[part][ei].sets||[]).forEach((s,si)=>{
@@ -907,11 +920,11 @@ function renderSetRows(part,ei){
     r.innerHTML=`
       <span class="set-num">S${si+1}</span>
       <input class="set-inp" type="number" min="0" step="1" placeholder="0" value="${s.reps||''}">
-      <input class="set-inp" type="number" min="0" step="0.5" placeholder="0" value="${s.weight||''}">
+      <input class="set-inp" type="number" min="0" step="${col2step}" placeholder="0" value="${s.weight||''}">
       <button class="icon-btn" style="font-size:14px;padding:3px"><i class="ti ti-x"></i></button>`;
     r.querySelectorAll('.set-inp')[0].addEventListener('input',e=>{S.exercises[part][ei].sets[si].reps=e.target.value});
     r.querySelectorAll('.set-inp')[1].addEventListener('input',e=>{S.exercises[part][ei].sets[si].weight=e.target.value});
-    r.querySelector('.icon-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.splice(si,1);renderSetRows(part,ei)});
+    r.querySelector('.icon-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.splice(si,1);renderSetRows(part,ei,col2step)});
     con.appendChild(r);
   });
 }
@@ -1338,3 +1351,5 @@ renderSidebar();
 </script>
 </body>
 </html>
+
+
