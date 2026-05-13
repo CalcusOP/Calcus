@@ -438,6 +438,20 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
 .toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-70px);background:var(--accent-d);color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;transition:transform .28s cubic-bezier(.34,1.56,.64,1);pointer-events:none;white-space:nowrap;z-index:200}
 .toast.show{transform:translateX(-50%) translateY(0)}
 
+/* AUTOSAVE INDICATOR */
+.autosave-ind{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--bg2);border:0.5px solid var(--bdr2);
+  color:var(--txt3);padding:6px 14px;border-radius:20px;
+  font-size:11px;font-weight:600;
+  display:flex;align-items:center;gap:5px;
+  opacity:0;transition:opacity .2s,transform .2s;
+  pointer-events:none;white-space:nowrap;z-index:199;
+  letter-spacing:.02em;
+}
+.autosave-ind.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.autosave-ind i{font-size:12px;color:var(--accent)}
+
 /* EMPTY */
 .empty{text-align:center;padding:28px 16px;color:var(--txt3);font-size:13px}
 .empty i{font-size:32px;display:block;margin-bottom:8px;color:var(--txt3)}
@@ -470,6 +484,7 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
 </head>
 <body>
 <div class="toast" id="toast"></div>
+<div class="autosave-ind" id="autosave-ind"><i class="ti ti-device-floppy"></i>Saved</div>
 
 <!-- EXERCISE PICKER MODAL -->
 <div class="overlay" id="overlay">
@@ -892,11 +907,11 @@ document.getElementById('bpchips').addEventListener('click',e=>{
       document.body.style.overflow='hidden';
     } else {
       S.activeParts.delete(p);delete S.exercises[p];
-      renderBP();renderExSections();
+      renderBP();renderExSections();autosave();
     }
   } else {
     S.activeParts.add(p);if(!S.exercises[p])S.exercises[p]=[];
-    renderBP();renderExSections();
+    renderBP();renderExSections();autosave();
   }
 });
 document.getElementById('warn-cancel').addEventListener('click',()=>{
@@ -909,7 +924,7 @@ document.getElementById('warn-confirm').addEventListener('click',()=>{
   document.getElementById('warn-overlay').classList.remove('open');
   document.body.style.overflow='';
   _warnPart=null;
-  renderBP();renderExSections();
+  renderBP();renderExSections();autosave();
 });
 document.getElementById('warn-overlay').addEventListener('click',e=>{
   if(e.target===document.getElementById('warn-overlay')){
@@ -978,8 +993,8 @@ function renderExList(part){
         <button class="add-set-btn"><i class="ti ti-plus" style="font-size:13px"></i>${isCardio?'Add session':'Add set'}</button>
       </div>`;
     row.querySelector('.change').addEventListener('click',()=>openPicker(part,ei));
-    row.querySelector('.icon-btn:not(.change)').addEventListener('click',()=>{S.exercises[part].splice(ei,1);renderExList(part);});
-    row.querySelector('.add-set-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.push({reps:'',weight:''});renderExList(part);});
+    row.querySelector('.icon-btn:not(.change)').addEventListener('click',()=>{S.exercises[part].splice(ei,1);renderExList(part);autosave();});
+    row.querySelector('.add-set-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.push({reps:'',weight:''});renderExList(part);autosave();});
     list.appendChild(row);
     renderSetRows(part,ei,col2step);
   });
@@ -995,9 +1010,9 @@ function renderSetRows(part,ei,col2step){
       <input class="set-inp" type="number" min="0" step="1" placeholder="0" value="${s.reps||''}">
       <input class="set-inp" type="number" min="0" step="${col2step}" placeholder="0" value="${s.weight||''}">
       <button class="icon-btn" style="font-size:14px;padding:3px"><i class="ti ti-x"></i></button>`;
-    r.querySelectorAll('.set-inp')[0].addEventListener('input',e=>{S.exercises[part][ei].sets[si].reps=e.target.value});
-    r.querySelectorAll('.set-inp')[1].addEventListener('input',e=>{S.exercises[part][ei].sets[si].weight=e.target.value});
-    r.querySelector('.icon-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.splice(si,1);renderSetRows(part,ei,col2step)});
+    r.querySelectorAll('.set-inp')[0].addEventListener('input',e=>{S.exercises[part][ei].sets[si].reps=e.target.value;autosave();});
+    r.querySelectorAll('.set-inp')[1].addEventListener('input',e=>{S.exercises[part][ei].sets[si].weight=e.target.value;autosave();});
+    r.querySelector('.icon-btn').addEventListener('click',()=>{S.exercises[part][ei].sets.splice(si,1);renderSetRows(part,ei,col2step);autosave();});
     con.appendChild(r);
   });
 }
@@ -1039,7 +1054,7 @@ function selectExercise(name,cat){
   } else {
     S.exercises[part][ei].name=name;S.exercises[part][ei].cat=cat;
   }
-  closePicker();renderExList(part);
+  closePicker();renderExList(part);autosave();
 }
 function closePicker(){
   document.getElementById('overlay').classList.remove('open');
@@ -1054,6 +1069,20 @@ document.getElementById('overlay').addEventListener('click', e => {
     history.back();
   }
 });
+/* ── AUTOSAVE ── */
+let _asTimer=null;
+function autosave(){
+  if(!S.currentDate)return;
+  S.logs[S.currentDate]={parts:[...S.activeParts],exercises:JSON.parse(JSON.stringify(S.exercises))};
+  if(S.activeParts.size===0)delete S.logs[S.currentDate];
+  save();renderSidebar();renderCal();
+  const ind=document.getElementById('autosave-ind');
+  if(!ind)return;
+  ind.classList.add('show');
+  clearTimeout(_asTimer);
+  _asTimer=setTimeout(()=>ind.classList.remove('show'),1800);
+}
+
 /* ── SAVE / CLEAR ── */
 document.getElementById('save-btn').addEventListener('click',()=>{
   if(!S.currentDate)return;
