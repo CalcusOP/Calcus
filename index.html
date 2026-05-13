@@ -442,6 +442,24 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
 .empty{text-align:center;padding:28px 16px;color:var(--txt3);font-size:13px}
 .empty i{font-size:32px;display:block;margin-bottom:8px;color:var(--txt3)}
 
+/* WARN MODAL */
+.warn-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:20px}
+.warn-overlay.open{display:flex}
+.warn-modal{background:var(--bg);border-radius:var(--rl);width:100%;max-width:340px;overflow:hidden;box-shadow:0 16px 48px rgba(0,0,0,.22)}
+.warn-modal-hdr{padding:16px 18px 12px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.warn-modal-icon{width:34px;height:34px;border-radius:50%;background:var(--danger-l);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.warn-modal-icon i{font-size:17px;color:var(--danger)}
+.warn-modal-hdr h3{font-size:15px;font-weight:700;color:var(--txt)}
+.warn-modal-body{padding:14px 18px}
+.warn-modal-body p{font-size:13px;color:var(--txt2);line-height:1.55}
+.warn-modal-body strong{color:var(--txt);font-weight:600}
+.warn-modal-excount{margin-top:8px;display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--danger);background:var(--danger-l);border-radius:20px;padding:3px 10px}
+.warn-modal-footer{padding:12px 18px;display:flex;gap:8px;justify-content:flex-end;border-top:0.5px solid var(--bdr)}
+.warn-cancel{background:var(--bg2);color:var(--txt2);border:0.5px solid var(--bdr2);border-radius:var(--r);padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:500;transition:background .12s}
+.warn-cancel:hover{background:var(--bg3)}
+.warn-confirm{background:var(--danger);color:#fff;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;transition:background .12s}
+.warn-confirm:hover{filter:brightness(1.1)}
+
 @media(max-width:480px){
   .body{padding:14px}
   .bpchip{padding:7px 11px;font-size:12px}
@@ -461,6 +479,24 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
       <button class="picker-close" id="picker-close" aria-label="Close"><i class="ti ti-x"></i></button>
     </div>
     <div class="picker-body" id="picker-body"></div>
+  </div>
+</div>
+
+<!-- BODY PART DESELECT WARNING MODAL -->
+<div class="warn-overlay" id="warn-overlay">
+  <div class="warn-modal">
+    <div class="warn-modal-hdr">
+      <div class="warn-modal-icon"><i class="ti ti-alert-triangle"></i></div>
+      <h3>Remove body part?</h3>
+    </div>
+    <div class="warn-modal-body">
+      <p>Deselecting <strong id="warn-part-name"></strong> will delete all exercises you've added for it.</p>
+      <div class="warn-modal-excount"><i class="ti ti-trash" style="font-size:12px"></i><span id="warn-ex-count"></span></div>
+    </div>
+    <div class="warn-modal-footer">
+      <button class="warn-cancel" id="warn-cancel">Keep it</button>
+      <button class="warn-confirm" id="warn-confirm"><i class="ti ti-trash" style="font-size:13px;margin-right:4px"></i>Remove</button>
+    </div>
   </div>
 </div>
 
@@ -701,21 +737,21 @@ const DB={
     barbell:['Barbell Bench Press','Incline Barbell Press','Decline Barbell Press','Close-Grip Bench Press','Barbell Floor Press','Reverse Grip Bench Press','Guillotine Press'],
     dumbbell:['Dumbbell Bench Press','Incline Dumbbell Press','Dumbbell Fly','Decline Dumbbell Press','Dumbbell Floor Press','Pullover','Squeeze Press'],
     cable:['Cable Fly (Low to High)','Cable Fly (High to Low)','Cable Fly (Middle)','Cable Crossover','Single-Arm Cable Press','Standing Cable Chest Press'],
-    machine:['Chest Press Machine','Pec Deck Fly','Hammer Strength Chest Press','Smith Machine Bench Press','Decline Hammer Strength Press','Incline Machine Press'],
+    machine:['Chest Press Machine','Pec Deck Fly','Hammer Strength Chest Press','Smith Machine Bench Press','Decline Hammer Strength Press','Incline Machine Press','Reverse Pec Dec Fly','Cable Crossover Machine','Assisted Dip Machine'],
     bodyweight:['Push Ups','Wide-Grip Push Ups','Decline Push Ups','Chest Dips','Diamond Push Ups','Archer Push Ups','Weighted Dips']
   },
   back:{
     barbell:['Barbell Deadlift','Bent-Over Barbell Row','Pendlay Row','Barbell Good Morning','Barbell Shrugs','T-Bar Row','Rack Pulls','Yates Row'],
     dumbbell:['Dumbbell Row','Dumbbell Deadlift','Chest-Supported Row','Dumbbell Pullover','Single-Arm Dumbbell Row','Dumbbell Shrugs','Seal Row','Kroc Rows'],
-    cable:['Lat Pulldown','Close-Grip Lat Pulldown','Seated Cable Row','Straight-Arm Pulldown','Cable Face Pull','Single-Arm Lat Pulldown','V-Bar Pulldown','Behind the Neck Pulldown'],
-    machine:['Machine Row','Assisted Pull-Up Machine','Hammer Strength Row','T-Bar Row Machine','Low Row Machine','Meadows Row','Diverging Lat Pulldown'],
-    bodyweight:['Pull Ups','Chin Ups','Inverted Row','Band Pull-Apart','Hyper-Extensions','Superman','Muscle Ups','Back Lever']
+    cable:['Lat Pulldown','Close-Grip Lat Pulldown','Seated Cable Row','Straight-Arm Pulldown','Cable Face Pull','Single-Arm Lat Pulldown','V-Bar Pulldown','Behind the Neck Pulldown','Cable Reverse Fly','Wide-Grip Seated Row','High Cable Row','Cable Shrugs'],
+    machine:['Machine Row','Assisted Pull-Up Machine','Hammer Strength Row','T-Bar Row Machine','Low Row Machine','Meadows Row','Diverging Lat Pulldown','Reverse Pec Dec Fly','Machine Rear Delt Row','Chest-Supported Machine Row','Nautilus Pullover Machine'],
+    bodyweight:['Pull Ups','Chin Ups','Inverted Row','Band Pull-Apart','Hyper-Extensions','Superman','Muscle Ups','Back Lever','Australian Pull Ups','Scapular Pull Ups','Archer Pull Ups']
   },
   shoulders:{
     barbell:['Overhead Press (OHP)','Behind-the-Neck Press','Barbell Upright Row','Push Press','Barbell Front Raise','Z-Press','Landmine Press'],
-    dumbbell:['Dumbbell Shoulder Press','Lateral Raise','Front Raise','Arnold Press','Rear Delt Fly','Dumbbell Shrugs','Lean-Away Lateral Raise'],
-    cable:['Cable Lateral Raise','Cable Front Raise','Cable Face Pull','Cable Upright Row','Single-Arm Rear Delt Fly','Y-Raise'],
-    machine:['Shoulder Press Machine','Machine Lateral Raise','Smith Machine OHP','Rear Delt Machine','Reverse Pec Deck','Viking Press'],
+    dumbbell:['Dumbbell Shoulder Press','Lateral Raise','Front Raise','Arnold Press','Rear Delt Fly','Dumbbell Shrugs','Lean-Away Lateral Raise','Dumbbell Upright Row','Seated Dumbbell Press','W-Raise'],
+    cable:['Cable Lateral Raise','Cable Front Raise','Cable Face Pull','Cable Upright Row','Single-Arm Rear Delt Fly','Y-Raise','Cable Rear Delt Fly','Rope Face Pull','Cable W-Raise'],
+    machine:['Shoulder Press Machine','Machine Lateral Raise','Smith Machine OHP','Rear Delt Machine','Reverse Pec Deck','Viking Press','Chest-Supported Rear Delt Machine','Plate-Loaded Shoulder Press'],
     bodyweight:['Pike Push Ups','Handstand Push Ups','Band Lateral Raise','YTW on Floor','Bus Drivers','Wall Walks']
   },
   biceps:{
@@ -838,12 +874,49 @@ document.getElementById('back-btn').addEventListener('click',()=>{
 function renderBP(){
   document.querySelectorAll('.bpchip').forEach(c=>c.classList.toggle('on',S.activeParts.has(c.dataset.part)));
 }
+
+/* Warning modal for body part deselection */
+let _warnPart=null;
 document.getElementById('bpchips').addEventListener('click',e=>{
   const c=e.target.closest('.bpchip');if(!c)return;
   const p=c.dataset.part;
-  if(S.activeParts.has(p)){S.activeParts.delete(p);delete S.exercises[p];}
-  else{S.activeParts.add(p);if(!S.exercises[p])S.exercises[p]=[];}
+  if(S.activeParts.has(p)){
+    // Check if there are exercises logged for this part
+    const exCount=(S.exercises[p]||[]).length;
+    if(exCount>0){
+      // Show warning modal
+      _warnPart=p;
+      document.getElementById('warn-part-name').textContent=p.charAt(0).toUpperCase()+p.slice(1);
+      document.getElementById('warn-ex-count').textContent=`${exCount} exercise${exCount!==1?'s':''} will be lost`;
+      document.getElementById('warn-overlay').classList.add('open');
+      document.body.style.overflow='hidden';
+    } else {
+      S.activeParts.delete(p);delete S.exercises[p];
+      renderBP();renderExSections();
+    }
+  } else {
+    S.activeParts.add(p);if(!S.exercises[p])S.exercises[p]=[];
+    renderBP();renderExSections();
+  }
+});
+document.getElementById('warn-cancel').addEventListener('click',()=>{
+  document.getElementById('warn-overlay').classList.remove('open');
+  document.body.style.overflow='';
+  _warnPart=null;
+});
+document.getElementById('warn-confirm').addEventListener('click',()=>{
+  if(_warnPart){S.activeParts.delete(_warnPart);delete S.exercises[_warnPart];}
+  document.getElementById('warn-overlay').classList.remove('open');
+  document.body.style.overflow='';
+  _warnPart=null;
   renderBP();renderExSections();
+});
+document.getElementById('warn-overlay').addEventListener('click',e=>{
+  if(e.target===document.getElementById('warn-overlay')){
+    document.getElementById('warn-overlay').classList.remove('open');
+    document.body.style.overflow='';
+    _warnPart=null;
+  }
 });
 
 /* ── EX SECTIONS ── */
