@@ -185,7 +185,8 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
   .sidebar.collapsed .sb-card-hdr span{display:none}
   .sidebar.collapsed .sb-card-hdr{justify-content:center;padding:12px 0}
   .sidebar.collapsed .sb-card-hdr i{margin:0}
-  .sidebar.collapsed .sb-card{border-radius:0;border-left:none;border-right:none}
+  .sidebar.collapsed .sb-card{border-radius:0;border-left:none;border-right:none;border-bottom:none}
+  .sidebar.collapsed .sb-card-hdr{border-bottom:none}
   /* Profile section */
   .sb-profile{
     padding:16px 14px;
@@ -217,17 +218,8 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
   }
   .sb-settings-panel.open{max-height:300px}
   .sidebar.collapsed .sb-settings-panel{display:none}
-  .sb-settings-item{
-    display:flex;align-items:center;gap:10px;
-    padding:11px 16px;
-    cursor:pointer;
-    font-size:13px;font-weight:500;color:var(--txt2);
-    border-bottom:0.5px solid var(--bdr);
-    transition:background .12s,color .12s;
-  }
-  .sb-settings-item:last-child{border-bottom:none}
-  .sb-settings-item:hover{background:var(--bg3);color:var(--txt)}
   .sb-settings-item i{font-size:15px;color:var(--txt3);flex-shrink:0}
+  .sb-settings-item:hover{background:var(--bg3);color:var(--txt)}
   .sb-settings-item:hover i{color:var(--accent)}
   /* Nav items in collapsed mode */
   .sb-nav{display:flex;flex-direction:column;border-bottom:0.5px solid var(--bdr);flex-shrink:0}
@@ -247,6 +239,17 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
 
 /* ── SIDEBAR CARDS ── */
 .sb-card{background:var(--bg);border:none;border-bottom:0.5px solid var(--bdr);border-radius:0;overflow:hidden;flex-shrink:0}
+
+/* Settings items — global so mobile drawer works too */
+.sb-settings-item{
+  display:flex;align-items:center;gap:10px;
+  padding:11px 16px;
+  cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--txt2);
+  border-bottom:0.5px solid var(--bdr);
+  transition:background .12s,color .12s;
+}
+.sb-settings-item:last-child{border-bottom:none}
 .sb-card-hdr{padding:10px 14px;border-bottom:0.5px solid var(--bdr);display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--txt3);background:var(--bg2);white-space:nowrap;overflow:hidden}
 .sb-card-hdr i{font-size:13px;color:var(--accent);flex-shrink:0}
 .sb-card-body{padding:12px 13px;overflow:hidden}
