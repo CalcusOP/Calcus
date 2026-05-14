@@ -20,8 +20,9 @@
   --cat-machine:#3B6D11;--cat-machine-l:#EAF3DE;
   --cat-bodyweight:#993C1D;--cat-bodyweight-l:#FAECE7;
 }
+/* System preference — only applies when user hasn't manually chosen */
 @media(prefers-color-scheme:dark){
-  :root{
+  :root:not([data-theme="light"]){
     --bg:#1c1c1a;--bg2:#242422;--bg3:#2e2e2b;
     --txt:#f0efeb;--txt2:#b4b2a9;--txt3:#888780;
     --bdr:rgba(255,255,255,0.1);--bdr2:rgba(255,255,255,0.2);
@@ -29,6 +30,23 @@
     --cat-barbell-l:#042C53;--cat-dumbbell-l:#412402;
     --cat-cable-l:#26215C;--cat-machine-l:#173404;--cat-bodyweight-l:#4A1B0C;
   }
+}
+/* Manual overrides */
+[data-theme="dark"]{
+  --bg:#1c1c1a;--bg2:#242422;--bg3:#2e2e2b;
+  --txt:#f0efeb;--txt2:#b4b2a9;--txt3:#888780;
+  --bdr:rgba(255,255,255,0.1);--bdr2:rgba(255,255,255,0.2);
+  --accent-l:#0a3328;--danger-l:#3d1010;
+  --cat-barbell-l:#042C53;--cat-dumbbell-l:#412402;
+  --cat-cable-l:#26215C;--cat-machine-l:#173404;--cat-bodyweight-l:#4A1B0C;
+}
+[data-theme="light"]{
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --txt:#1a1a18;--txt2:#5f5e5a;--txt3:#888780;
+  --bdr:rgba(0,0,0,0.12);--bdr2:rgba(0,0,0,0.22);
+  --accent-l:#E1F5EE;--danger-l:#FCEBEB;
+  --cat-barbell-l:#E6F1FB;--cat-dumbbell-l:#FAEEDA;
+  --cat-cable-l:#EEEDFE;--cat-machine-l:#EAF3DE;--cat-bodyweight-l:#FAECE7;
 }
 html,body{min-height:100%;width:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;color:var(--txt);-webkit-tap-highlight-color:transparent}
 .page-wrapper{width:100%;min-height:100vh}
@@ -474,6 +492,14 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
 .warn-confirm{background:var(--danger);color:#fff;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;font-size:13px;font-family:inherit;font-weight:600;transition:background .12s}
 .warn-confirm:hover{filter:brightness(1.1)}
 
+/* iOS TOGGLE SWITCH */
+.ios-toggle{position:relative;width:44px;height:26px;flex-shrink:0;cursor:pointer;display:inline-block}
+.ios-toggle input{opacity:0;width:0;height:0;position:absolute}
+.ios-toggle-track{position:absolute;inset:0;background:var(--bg3);border-radius:13px;transition:background .25s;border:1.5px solid var(--bdr2)}
+.ios-toggle input:checked+.ios-toggle-track{background:var(--accent);border-color:var(--accent)}
+.ios-toggle-thumb{position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,.3);transition:transform .25s cubic-bezier(.34,1.4,.64,1);pointer-events:none}
+.ios-toggle input:checked~.ios-toggle-thumb{transform:translateX(18px)}
+
 @media(max-width:480px){
   .body{padding:14px}
   .bpchip{padding:7px 11px;font-size:12px}
@@ -539,7 +565,15 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
   <!-- Settings panel (collapsible) -->
   <div class="sb-settings-panel" id="sb-settings-panel">
     <div class="sb-settings-item" id="sset-name"><i class="ti ti-user-edit"></i><span>Change name</span></div>
-    <div class="sb-settings-item" id="sset-theme"><i class="ti ti-moon"></i><span>Toggle dark mode</span></div>
+    <div class="sb-settings-item" id="sset-theme" style="cursor:default">
+      <i class="ti ti-moon" id="sset-theme-icon"></i>
+      <span id="sset-theme-label">Dark mode</span>
+      <label class="ios-toggle" title="Toggle dark mode">
+        <input type="checkbox" id="theme-chk-desktop">
+        <div class="ios-toggle-track"></div>
+        <div class="ios-toggle-thumb"></div>
+      </label>
+    </div>
     <div class="sb-settings-item" id="sset-clear"><i class="ti ti-trash"></i><span>Clear all data</span></div>
     <div class="sb-settings-item" id="sset-export"><i class="ti ti-download"></i><span>Export workouts</span></div>
   </div>
@@ -684,7 +718,15 @@ header{background:var(--bg);border-bottom:0.5px solid var(--bdr);padding:14px 20
   <!-- Settings panel -->
   <div class="mob-drawer-settings-panel" id="mob-sb-settings-panel">
     <div class="sb-settings-item" id="mob-sset-name"><i class="ti ti-user-edit"></i><span>Change name</span></div>
-    <div class="sb-settings-item" id="mob-sset-theme"><i class="ti ti-moon"></i><span>Toggle dark mode</span></div>
+    <div class="sb-settings-item" id="mob-sset-theme" style="cursor:default">
+      <i class="ti ti-moon" id="mob-sset-theme-icon"></i>
+      <span id="mob-sset-theme-label">Dark mode</span>
+      <label class="ios-toggle" title="Toggle dark mode">
+        <input type="checkbox" id="theme-chk-mobile">
+        <div class="ios-toggle-track"></div>
+        <div class="ios-toggle-thumb"></div>
+      </label>
+    </div>
     <div class="sb-settings-item" id="mob-sset-clear"><i class="ti ti-trash"></i><span>Clear all data</span></div>
     <div class="sb-settings-item" id="mob-sset-export"><i class="ti ti-download"></i><span>Export workouts</span></div>
   </div>
@@ -1202,12 +1244,7 @@ document.getElementById('logo-home-btn')?.addEventListener('click', ()=>{
     const n = prompt('Change your name:', cur);
     if(n){ localStorage.setItem('wl2_username',n); document.getElementById('display-name').textContent=n; updateProfileUI(); }
   });
-  document.getElementById('sset-theme')?.addEventListener('click',()=>{
-    // Simple manual dark/light override using a class on <html>
-    document.documentElement.classList.toggle('force-light');
-    const isLight = document.documentElement.classList.contains('force-light');
-    document.getElementById('sset-theme').querySelector('span').textContent = isLight ? 'Toggle dark mode' : 'Toggle light mode';
-  });
+  document.getElementById('theme-chk-desktop')?.addEventListener('change', function(){ applyTheme(this.checked); });
   document.getElementById('sset-clear')?.addEventListener('click',()=>{
     if(confirm('Delete ALL workout data? This cannot be undone.')){
       localStorage.removeItem('wl2_data');
@@ -1361,11 +1398,7 @@ renderSidebar();
       if(av) av.textContent=n.charAt(0).toUpperCase();
     }
   });
-  document.getElementById('mob-sset-theme')?.addEventListener('click',()=>{
-    document.documentElement.classList.toggle('force-light');
-    const isLight = document.documentElement.classList.contains('force-light');
-    document.getElementById('mob-sset-theme').querySelector('span').textContent = isLight ? 'Toggle dark mode' : 'Toggle light mode';
-  });
+  document.getElementById('theme-chk-mobile')?.addEventListener('change', function(){ applyTheme(this.checked); });
   document.getElementById('mob-sset-clear')?.addEventListener('click',()=>{
     if(confirm('Delete ALL workout data? This cannot be undone.')){
       localStorage.removeItem('wl2_data');
@@ -1449,6 +1482,29 @@ renderSidebar();
     document.getElementById('mob-sb-attr').textContent=q.a;
     updateMobProfileUI();
   }
+})();
+
+/* ── THEME ENGINE ── */
+function applyTheme(isDark){
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('calcus_theme', isDark ? 'dark' : 'light');
+  ['theme-chk-desktop','theme-chk-mobile'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.checked=isDark;
+  });
+  ['sset-theme-icon','mob-sset-theme-icon'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.className=isDark?'ti ti-moon':'ti ti-sun';
+  });
+  ['sset-theme-label','mob-sset-theme-label'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent=isDark?'Dark mode':'Light mode';
+  });
+}
+(function initTheme(){
+  const saved=localStorage.getItem('calcus_theme');
+  const prefersDark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  applyTheme(saved ? saved==='dark' : prefersDark);
+  window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',e=>{
+    if(!localStorage.getItem('calcus_theme')) applyTheme(e.matches);
+  });
 })();
 </script>
 </body>
